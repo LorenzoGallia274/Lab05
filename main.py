@@ -1,4 +1,6 @@
 import flet as ft
+from flet import MainAxisAlignment
+
 from alert import AlertManager
 from deposito_strumenti import DepositoStrumenti
 
@@ -37,6 +39,14 @@ def main(page: ft.Page):
 
     # Tutti i TextField per le info necessarie per aggiungere un nuovo strumento (tipo, marca, anno, contatore posti)
     # TODO
+    # TextField per i 3 parametri necessari ad aggiungere un nuovo strumento
+    TipoField = ft.TextField(label='Tipo')
+    MarcaField = ft.TextField(label='Marca')
+    AnnoField = ft.TextField(label='Anno acquisto')
+    # TextField per lo zero al centro del contatore
+    # imposto la larghezza, la grandezza del testo e l'allineamento centrale
+    myText = ft.TextField(value='0', disabled = True, width = 100, text_size = 30, text_align = ft.TextAlign.CENTER)
+
 
     # --- FUNZIONI APP ---
     def aggiorna_lista_strumenti():
@@ -56,6 +66,54 @@ def main(page: ft.Page):
 
     # Handlers per la gestione dei pulsanti utili all'inserimento di un nuovo strumento
     # TODO
+    # gestisce la logice del plus: incrementa il prezzo mostrato a schermo
+    def handler_plus(e):
+        # converte in intero per poter incrementare
+        v = int(myText.value)
+        v+=1
+        # lo riconverto in stringa e lo assegno al value di MyText
+        myText.value = str(v)
+        myText.update()
+
+    # gestisce la logice del minus: decrementa il prezzo mostrato a schermo
+    def handler_minus(e):
+        # converte in intero per poter decrementare
+        v = int(myText.value)
+        v-=1
+        # lo riconverto in stringa e lo assegno al value del testo
+        myText.value = str(v)
+        myText.update()
+    # creo i pulsanti per il plus e minus, collegandoli al loro rispettivo handler al click (on_click)
+    myBtnMinus = ft.IconButton(icon=ft.Icons.REMOVE, icon_size=30, on_click=handler_minus, icon_color = 'Red')
+    myBtnPlus = ft.IconButton(icon=ft.Icons.ADD, icon_size=30, on_click=handler_plus, icon_color = 'Green')
+    # definisco la funzione aggiungi_strumento che gestisce il salvataggio di un nuovo strumento
+    def aggiungi_strumento(e):
+        # gestione eccez.
+        # blocco try
+        try:
+            # provo a convertire in interi l'anno e il prezzo inseriti nel testo dei due campi
+            anno_conv = int(AnnoField.value)
+            valore_conv = int(myText.value)
+        except:
+            # se ad esempio l'utente digita lettere nell'anno...
+            # mostra un messaggio di errore
+            alert.show_alert("Errore: inserisci valori numerici validi per anno e posti")
+            # interrompe la funzione (non salva dati errati)
+            return
+        # richiamo il metodo per aggiungere il nuovo strumento al deposito
+        deposito.aggiungi_strumento(TipoField.value, MarcaField.value, anno_conv, valore_conv)
+        # svuoto i campi per essere pronti ad inserire nuovi strumenti
+        TipoField.value = ''
+        MarcaField.value = ''
+        AnnoField.value = ''
+        # azzero il contatore
+        myText.value = '0'
+        # richiamo la funzione che svuota e ricrea la ListView degli strumenti
+        aggiorna_lista_strumenti()
+        page.update()
+
+
+
 
     # --- EVENTI ---
     toggle_cambia_tema = ft.Switch(label="Tema scuro", value=True, on_change=cambia_tema)
@@ -63,6 +121,8 @@ def main(page: ft.Page):
 
     # Pulsanti per la gestione dell'inserimento di un nuovo strumento
     # TODO
+    # creo il pulsante per aggiungere un nuovo strumento, collegato al click (on_click) ad aggiungi_strumento
+    BtnAggiungi = ft.Button('Aggiungi strumento', on_click = aggiungi_strumento)
 
     # --- LAYOUT ---
     page.add(
@@ -81,6 +141,17 @@ def main(page: ft.Page):
 
         # Sezione 3
         # TODO
+        # 'riprendo' lo stile di layout delle altre sezioni
+        ft.Divider(),
+        ft.Text('Aggiungi nuovo strumento', size = 20),
+        # prima riga
+        ft.Row(controls=[TipoField, MarcaField, AnnoField, myBtnMinus, myText, myBtnPlus], alignment = ft.MainAxisAlignment.CENTER),
+        # seconda riga
+        ft.Row(controls=[BtnAggiungi],alignment = ft.MainAxisAlignment.CENTER),
+
+
+
+
 
         # Sezione 4
         ft.Divider(),
